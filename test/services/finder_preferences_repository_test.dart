@@ -24,13 +24,44 @@ void main() {
 
   test('fresh install gets safe defaults', () {
     final p = repo.read();
-    expect(p.clapPattern, 1);
+    expect(p.clapPattern, 2, reason: 'double clap is the safe default');
     expect(p.clapSensitivityPct, 50);
     expect(p.whistleMinHz, 1500);
     expect(p.whistleMaxHz, 3800);
     expect(p.cooldownSeconds, 5);
     expect(p.pocketModeEnabled, isFalse);
     expect(p.batteryStopPercent, 0, reason: 'auto-stop is opt-in');
+  });
+
+  test('v1 data with the old single-clap / 0.12 s defaults is upgraded',
+      () async {
+    await box.put('finder_preferences', {
+      'schema_version': 1,
+      'clap_pattern': 1,
+      'whistle_min_duration_ms': 120,
+      'clap_sensitivity_pct': 65,
+    });
+    final p = repo.read();
+    expect(p.clapPattern, 2);
+    expect(p.whistleMinDurationMs, 400);
+    expect(p.clapSensitivityPct, 65, reason: 'other choices are kept');
+  });
+
+  test('deliberate v1 choices that differ from old defaults are kept',
+      () async {
+    await box.put('finder_preferences', {
+      'schema_version': 1,
+      'clap_pattern': 3,
+      'whistle_min_duration_ms': 600,
+    });
+    final p = repo.read();
+    expect(p.clapPattern, 3);
+    expect(p.whistleMinDurationMs, 600);
+  });
+
+  test('v2 single clap chosen by the user is respected', () async {
+    await repo.save(const FinderPreferences(clapPattern: 1));
+    expect(repo.read().clapPattern, 1);
   });
 
   test('migrates legacy low/high presets to percentages', () async {

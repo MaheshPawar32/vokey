@@ -16,11 +16,11 @@ internal data class MonitoringConfig(
     val clapSensitivityPercent: Int = Sensitivity.fromPreset(clapSensitivity),
     val whistleSensitivityPercent: Int = Sensitivity.fromPreset(whistleSensitivity),
     /** 1 = single, 2 = double, 3 = triple clap. */
-    val clapPattern: Int = 1,
+    val clapPattern: Int = 2,
     val cooldownSeconds: Int = 5,
     val whistleMinHz: Int = 1_500,
     val whistleMaxHz: Int = 3_800,
-    val whistleMinDurationMs: Int = 120,
+    val whistleMinDurationMs: Int = 400,
     val pocketModeEnabled: Boolean = false,
     /** 0 disables. */
     val batteryWarningPercent: Int = 0,
@@ -56,12 +56,12 @@ internal data class MonitoringConfig(
                 whistleSensitivityPercent = percentOr(
                     extras, "whistle_sensitivity_pct", Sensitivity.fromPreset(whistleSensitivity),
                 ),
-                clapPattern = (extras?.getInt("clap_pattern", 1) ?: 1).coerceIn(1, 3),
+                clapPattern = (extras?.getInt("clap_pattern", 2) ?: 2).coerceIn(1, 3),
                 cooldownSeconds = (extras?.getInt("cooldown_seconds", 5) ?: 5).coerceIn(0, 120),
                 whistleMinHz = minHz,
                 whistleMaxHz = maxHz,
                 whistleMinDurationMs =
-                    (extras?.getInt("whistle_min_duration_ms", 120) ?: 120).coerceIn(60, 2_000),
+                    (extras?.getInt("whistle_min_duration_ms", 400) ?: 400).coerceIn(60, 2_000),
                 pocketModeEnabled = extras?.getBoolean("pocket_mode_enabled", false) ?: false,
                 batteryWarningPercent =
                     (extras?.getInt("battery_warning_percent", 0) ?: 0).coerceIn(0, 50),

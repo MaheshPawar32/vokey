@@ -18,6 +18,12 @@ internal class WhistleDetector(
     private val refractoryMs: Long = 2_500L,
     minFrequencyHz: Int = 1_500,
     maxFrequencyHz: Int = 3_800,
+    /**
+     * Max allowed energy in 200–1000 Hz relative to the whistle peak. A
+     * whistle is almost a pure tone; a voice (talking, singing, a held
+     * vowel) always has a strong fundamental/low harmonics there.
+     */
+    private val maxLowBandRatio: Double = 0.15,
 ) {
     private val minFrequencyHz = minFrequencyHz.coerceIn(500, 7_000)
     private val maxFrequencyHz = maxFrequencyHz.coerceIn(this.minFrequencyHz + 200, 7_500)
@@ -109,9 +115,16 @@ internal class WhistleDetector(
 
         val averagePower = totalPower / max(1, bins)
         val prominence = peakPower / max(1.0, averagePower)
+        var lowBandPower = 0.0
+        if (peakPower >= minPeakPower && prominence >= minProminence) {
+            for (frequency in 200..1_000 step 100) {
+                lowBandPower = max(lowBandPower, goertzelPower(samples, length, frequency))
+            }
+        }
         val candidate = peakFrequency != null &&
             peakPower >= minPeakPower &&
-            prominence >= minProminence
+            prominence >= minProminence &&
+            lowBandPower <= peakPower * maxLowBandRatio
 
         if (!candidate) {
             resetCandidate()

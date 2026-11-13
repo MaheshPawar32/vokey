@@ -576,12 +576,14 @@ class MainActivity : FlutterActivity() {
             val clapPct = (arguments?.get("clap_sensitivity_pct") as? Number)?.toInt() ?: 50
             val whistlePct = (arguments?.get("whistle_sensitivity_pct") as? Number)?.toInt() ?: 50
             val manager = AudioCaptureManager(
-                ClapDetector.forPercent(clapPct, refractoryMs = 220L),
+                ClapDetector.forPercent(
+                    clapPct, refractoryMs = 220L, onDiagnostic = DetectionLog.sinkOrNull(),
+                ),
                 WhistleDetector.forSettings(
                     whistlePct,
                     (arguments?.get("whistle_min_hz") as? Number)?.toInt() ?: 1_500,
                     (arguments?.get("whistle_max_hz") as? Number)?.toInt() ?: 3_800,
-                    (arguments?.get("whistle_min_duration_ms") as? Number)?.toInt() ?: 120,
+                    (arguments?.get("whistle_min_duration_ms") as? Number)?.toInt() ?: 400,
                 ),
             )
             captureManager = manager

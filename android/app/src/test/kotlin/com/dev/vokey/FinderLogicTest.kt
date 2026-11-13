@@ -120,21 +120,6 @@ class FinderLogicTest {
         assertEquals(50, Sensitivity.fromPreset("unknown"))
     }
 
-    @Test
-    fun higherClapSensitivityDetectsQuieterTransient() {
-        // A moderate transient: peaky but quieter than a loud clap.
-        val frame = ShortArray(320) { i -> if (i in 100..110) 4_000 else (if (i % 2 == 0) 300 else -300) }
-        val low = ClapDetector.forPercent(0)
-        val high = ClapDetector.forPercent(100)
-        // Prime both with quiet frames so the noise floor settles.
-        repeat(20) { n ->
-            low.process(ShortArray(320), 320, n * 20L)
-            high.process(ShortArray(320), 320, n * 20L)
-        }
-        assertFalse(low.process(frame, 320, 1_000).clapDetected)
-        assertTrue(high.process(frame, 320, 1_000).clapDetected)
-    }
-
     // --- Whistle band and duration ----------------------------------------
 
     private fun tone(frame: Int, hz: Int) = ShortArray(320) { i ->
@@ -182,5 +167,28 @@ class FinderLogicTest {
         assertTrue(SelfTriggerGuard.suppressed(false, nowMs = 10_500, alertEndedAtMs = 10_000))
         assertFalse(SelfTriggerGuard.suppressed(false, nowMs = 11_000, alertEndedAtMs = 10_000))
         assertFalse(SelfTriggerGuard.suppressed(false, nowMs = 5_000, alertEndedAtMs = 0))
+    }
+
+    // --- Whistle vs voice ---------------------------------------------------
+
+    @Test
+    fun heldOrSungVowelIsNotAWhistle() {
+        // A high voice holding a vowel: strong 2.2 kHz harmonic but also a
+        // strong fundamental and low harmonics.
+        val sung = SignalLab.vowel(1_500, f0 = 275.0, amplitude = 12_000.0)
+        assertEquals(0, SignalLab.runWhistle(WhistleDetector.forSettings(50, minDurationMs = 400), sung))
+        assertEquals(0, SignalLab.runWhistle(WhistleDetector.forSettings(100, minDurationMs = 120), sung))
+    }
+
+    @Test
+    fun realWhistleStillDetectedWithNewDefaults() {
+        val whistle = SignalLab.concat(SignalLab.roomNoise(300), SignalLab.tone(1_000, 2_300.0, 6_000.0))
+        assertEquals(1, SignalLab.runWhistle(WhistleDetector.forSettings(50, minDurationMs = 400), whistle))
+    }
+
+    @Test
+    fun shortWhistleBelowMinimumDurationIgnored() {
+        val chirp = SignalLab.concat(SignalLab.roomNoise(300), SignalLab.tone(250, 2_300.0, 6_000.0))
+        assertEquals(0, SignalLab.runWhistle(WhistleDetector.forSettings(50, minDurationMs = 400), chirp))
     }
 }

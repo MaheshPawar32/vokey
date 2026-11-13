@@ -6,19 +6,21 @@ import '../core/storage/safe_read.dart';
 /// a schema version so future fields can be migrated safely.
 class FinderPreferences {
   const FinderPreferences({
-    this.clapPattern = 1,
+    this.clapPattern = 2,
     this.clapSensitivityPct = 50,
     this.whistleSensitivityPct = 50,
     this.whistleMinHz = 1500,
     this.whistleMaxHz = 3800,
-    this.whistleMinDurationMs = 120,
+    this.whistleMinDurationMs = 400,
     this.cooldownSeconds = 5,
     this.pocketModeEnabled = false,
     this.batteryWarningPercent = 20,
     this.batteryStopPercent = 0,
   });
 
-  static const schemaVersion = 1;
+  /// 2: double clap and 0.4 s whistle became the defaults (v1 single clap /
+  /// 0.12 s whistle let speech and room noise trigger alerts).
+  static const schemaVersion = 2;
 
   final int clapPattern;
   final int clapSensitivityPct;
@@ -120,6 +122,15 @@ class FinderPreferencesRepository {
     if (raw is! Map) return _migrateFromLegacy();
     final m = Map<String, dynamic>.from(raw);
     const d = FinderPreferences();
+    // v1 -> v2: replace the old *default* values (still saved because other
+    // screens wrote the whole map) with the safer new defaults. A value the
+    // user picked deliberately differs from the old default and is kept.
+    if (readInt(m['schema_version'], 1) < 2) {
+      if (readInt(m['clap_pattern'], 1) == 1) m['clap_pattern'] = d.clapPattern;
+      if (readInt(m['whistle_min_duration_ms'], 120) == 120) {
+        m['whistle_min_duration_ms'] = d.whistleMinDurationMs;
+      }
+    }
     return FinderPreferences(
       clapPattern: readInt(m['clap_pattern'], d.clapPattern),
       clapSensitivityPct:

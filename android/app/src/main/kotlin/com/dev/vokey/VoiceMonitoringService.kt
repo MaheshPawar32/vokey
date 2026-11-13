@@ -242,6 +242,7 @@ internal class VoiceMonitoringService : Service() {
                 ClapDetector.forPercent(
                     monitoringConfig.clapSensitivityPercent,
                     refractoryMs = if (monitoringConfig.clapPattern > 1) 220L else 450L,
+                    onDiagnostic = DetectionLog.sinkOrNull(),
                 )
             } else {
                 null

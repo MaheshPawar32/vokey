@@ -55,7 +55,11 @@ internal class AudioCaptureManager(
         require(minBufferBytes > 0) { "This device does not support the required microphone format." }
 
         val audioRecord = AudioRecord(
-            MediaRecorder.AudioSource.MIC,
+            // VOICE_RECOGNITION: Android's CDD requires AGC and noise
+            // suppression to be off for this source. With MIC, many phones
+            // apply automatic gain that pumps quiet room noise up into
+            // fake "sudden sounds" and smears the clap transient.
+            MediaRecorder.AudioSource.VOICE_RECOGNITION,
             SAMPLE_RATE,
             AudioFormat.CHANNEL_IN_MONO,
             AudioFormat.ENCODING_PCM_16BIT,
