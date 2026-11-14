@@ -63,7 +63,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('VOICE MATE',
+                  Text('VOKEY',
                       style: TextStyle(
                         color: VokeyApp.cyan,
                         letterSpacing: 1.6,
