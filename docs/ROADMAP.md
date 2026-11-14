@@ -143,7 +143,7 @@ Kotlin responsibilities:
 - `BatteryStateMonitor` – battery level/charging signals and configured thresholds.
 - `PermissionStatusProvider` – native capability/service status where Flutter permission APIs are insufficient.
 - `MonitoringTileService` – Quick Settings state/actions.
-- `VoiceMateAppWidgetProvider` – widget state/actions.
+- `VokeyWidgetProvider` – widget state/actions.
 - `BluetoothRemoteManager` – explicitly paired accessory connection and authenticated button events.
 - Wear OS companion module – status/control messages; phone remains authoritative for monitoring lifecycle.
 
