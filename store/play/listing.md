@@ -77,6 +77,21 @@ GOOD TO KNOW
 
 Vokey is supported by ads. Ads never appear while Vokey is listening or ringing.
 
+## Release notes — 0.1.1 (2)
+
+Release name: `0.1.1 (2) – Smarter clap detection`
+
+```
+<en-US>
+Smarter, calmer clap detection:
+• Talking, TV and room noise no longer set off alerts
+• Double clap is now the default for fewer accidental alerts
+• More reliable whistle detection that ignores voices
+• Vokey never mistakes its own alert sound for a whistle
+• Small fixes and design polish
+</en-US>
+```
+
 ## Release notes (first release)
 
 Release name: `0.1.0 (1) – First release`
